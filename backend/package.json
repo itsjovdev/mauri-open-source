@@ -1,0 +1,42 @@
+{
+  "name": "backend",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsc-watch -p tsconfig.json --onSuccess \"node ./dist/main.js\"",
+    "start:dev": "tsc-watch -p tsconfig.json --onSuccess \"node ./dist/main.js\"",
+    "start": "node ./dist/main.js",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "seed": "tsx ./src/database/seed.ts",
+    "typeorm": "tsx ./node_modules/typeorm/cli.js -d ./src/config/data-source.ts",
+    "migration:generate": "npm run typeorm -- migration:generate",
+    "migration:create": "tsx ./node_modules/typeorm/cli.js migration:create",
+    "migration:run": "npm run typeorm -- migration:run",
+    "migration:revert": "npm run typeorm -- migration:revert"
+  },
+  "dependencies": {
+    "@fastify/cors": "^11.1.0",
+    "@nestjs/common": "^11.1.9",
+    "@nestjs/config": "^4.0.2",
+    "@nestjs/core": "^11.1.9",
+    "@nestjs/mapped-types": "^2.1.0",
+    "@nestjs/platform-fastify": "^11.1.9",
+    "@nestjs/typeorm": "^11.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.2",
+    "dotenv": "^17.2.3",
+    "pg": "^8.22.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.2",
+    "sql.js": "^1.13.0",
+    "typeorm": "^0.3.30"
+  },
+  "devDependencies": {
+    "@types/node": "^25.3.3",
+    "tsc-watch": "^7.2.0",
+    "tsx": "^4.21.0",
+    "typescript": "~5.9.3"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "name": "mauri-erp",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev:frontend": "npm run dev -w frontend",
+    "dev:backend": "npm run start:dev -w backend",
+    "build": "npm run build -w backend && npm run build -w frontend",
+    "build:frontend": "npm run build -w frontend",
+    "build:backend": "npm run build -w backend",
+    "typecheck": "npm run typecheck -w backend && npm run typecheck -w frontend",
+    "typecheck:frontend": "npm run typecheck -w frontend",
+    "typecheck:backend": "npm run typecheck -w backend",
+    "start:backend": "npm run start -w backend",
+    "seed": "npm run seed -w backend",
+    "migration:run": "npm run migration:run -w backend",
+    "migration:revert": "npm run migration:revert -w backend"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

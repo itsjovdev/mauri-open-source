@@ -1,4 +1,4 @@
-# Mauri ERP
+# Mauri
 
 [![Project status](https://img.shields.io/badge/status-active_development-2ea44f?style=flat-square)](#estado-del-proyecto)
 [![Node.js](https://img.shields.io/badge/node-%3E%3D20-43853d?style=flat-square&logo=node.js&logoColor=white)](https://nodejs.org/)
@@ -8,7 +8,7 @@
 [![NestJS](https://img.shields.io/badge/nestjs-11-e0234e?style=flat-square&logo=nestjs&logoColor=white)](https://nestjs.com/)
 [![PostgreSQL](https://img.shields.io/badge/postgresql-ready-4169e1?style=flat-square&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 
-Mauri ERP es un software de gestión open source para agencias y consultoras pequeñas (equipos de 2 a 30 personas) que venden proyectos a clientes y facturan por ese trabajo.
+Mauri es un software de gestión open source para agencias y consultoras pequeñas (equipos de 2 a 30 personas) que venden proyectos a clientes y facturan por ese trabajo.
 
 Permite gestionar clientes, proyectos, tareas, horas trabajadas, presupuestos, facturas, gastos y reportes desde una sola plataforma autoalojada.
 
@@ -16,7 +16,7 @@ El proyecto está enfocado en equipos que venden servicios por proyecto y necesi
 
 ## Enfoque del producto
 
-Mauri ERP está orientado a negocios donde el trabajo se organiza alrededor de clientes y proyectos:
+Mauri está orientado a negocios donde el trabajo se organiza alrededor de clientes y proyectos:
 
 - freelancers con varios clientes activos;
 - agencias de desarrollo, diseño o marketing;
@@ -56,9 +56,13 @@ El repositorio está organizado como un monorepo con npm workspaces.
 
 | Capa | Tecnología |
 | --- | --- |
-| Frontend | React 19, Vite, TypeScript, Tailwind CSS |
-| UI | Radix UI, shadcn-style components, lucide-react |
-| Estado/datos | TanStack Query |
+| Frontend | React 19, Vite, TypeScript, Tailwind CSS v4 |
+| Ruteo | wouter |
+| UI | Radix UI, shadcn-style components, lucide-react, class-variance-authority |
+| Estado/datos | TanStack Query, cliente HTTP generado desde OpenAPI |
+| Gráficos | Recharts |
+| Fechas | date-fns |
+| Tema claro/oscuro | next-themes |
 | Backend | NestJS 11, Fastify, TypeScript |
 | Base de datos | PostgreSQL, TypeORM |
 | Demo local | sql.js en memoria |
@@ -243,11 +247,11 @@ Antes de arrancar en producción, configura `DATABASE_URL` y ejecuta las migraci
 
 ## Estado del proyecto
 
-Mauri ERP está en desarrollo activo y cubre las entidades principales del flujo de servicios profesionales. La navegación, los listados y el flujo de presupuestos ya son funcionales; los formularios de creación y edición del resto de entidades son el siguiente foco de trabajo.
+Mauri está en desarrollo activo y cubre las entidades principales del flujo de servicios profesionales. La navegación, los listados y el flujo de presupuestos ya son funcionales; los formularios de creación y edición del resto de entidades son el siguiente foco de trabajo.
 
 ## Contribuir
 
-Las contribuciones deben mantenerse alineadas con el enfoque del proyecto: un ERP ligero para negocios de servicios.
+Las contribuciones deben mantenerse alineadas con el enfoque del proyecto: gestión para agencias y consultoras pequeñas, no un CRM de ventas ni un ERP genérico.
 
 Buenas prácticas para contribuir:
 
@@ -255,4 +259,4 @@ Buenas prácticas para contribuir:
 - evita mezclar refactors grandes con funcionalidades nuevas;
 - ejecuta `npm run typecheck` antes de enviar cambios;
 - documenta cualquier cambio que afecte instalación, configuración o comandos;
-- mantén las nuevas funcionalidades conectadas con el flujo cliente/proyecto/servicio.
+- mantén las nuevas funcionalidades conectadas con el flujo cliente/presupuesto/proyecto/factura.

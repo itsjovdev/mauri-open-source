@@ -7,6 +7,7 @@
 [![React](https://img.shields.io/badge/react-19-61dafb?style=flat-square&logo=react&logoColor=111111)](https://react.dev/)
 [![NestJS](https://img.shields.io/badge/nestjs-11-e0234e?style=flat-square&logo=nestjs&logoColor=white)](https://nestjs.com/)
 [![PostgreSQL](https://img.shields.io/badge/postgresql-ready-4169e1?style=flat-square&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg?style=flat-square)](./LICENSE)
 
 Mauri es un software de gestión open source para agencias y consultoras pequeñas (equipos de 2 a 30 personas) que venden proyectos a clientes y facturan por ese trabajo.
 
@@ -260,3 +261,7 @@ Buenas prácticas para contribuir:
 - ejecuta `npm run typecheck` antes de enviar cambios;
 - documenta cualquier cambio que afecte instalación, configuración o comandos;
 - mantén las nuevas funcionalidades conectadas con el flujo cliente/presupuesto/proyecto/factura.
+
+## Licencia
+
+Este proyecto está licenciado bajo la [Licencia MIT](./LICENSE). Puedes usarlo, modificarlo y distribuirlo libremente, incluso en proyectos comerciales, siempre que conserves el aviso de copyright.

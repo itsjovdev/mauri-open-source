@@ -21,6 +21,7 @@ import Invoices from "@/pages/Invoices";
 import InvoiceDetail from "@/pages/InvoiceDetail";
 import Expenses from "@/pages/Expenses";
 import Reports from "@/pages/Reports";
+import Settings from "@/pages/Settings";
 
 const NotFound = () => <div className="p-8"><h1 className="text-2xl font-bold">404 No Encontrado</h1><p className="mt-2 text-muted-foreground">La página solicitada no existe.</p></div>;
 
@@ -64,6 +65,8 @@ function Router() {
 
         <Route path="/reportes" component={Reports} />
 
+        <Route path="/configuracion" component={Settings} />
+
         <Route component={NotFound} />
       </Switch>
     </AppLayout>
@@ -72,7 +75,7 @@ function Router() {
 
 function App() {
   return (
-    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
       <QueryClientProvider client={queryClient}>
         <TooltipProvider>
           <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>

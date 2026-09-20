@@ -8,9 +8,9 @@
 [![NestJS](https://img.shields.io/badge/nestjs-11-e0234e?style=flat-square&logo=nestjs&logoColor=white)](https://nestjs.com/)
 [![PostgreSQL](https://img.shields.io/badge/postgresql-ready-4169e1?style=flat-square&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 
-Mauri ERP es un ERP ligero y open source para pequeños negocios de servicios.
+Mauri ERP es un software de gestión open source para agencias y consultoras pequeñas (equipos de 2 a 30 personas) que venden proyectos a clientes y facturan por ese trabajo.
 
-Permite a freelancers, agencias pequeñas, estudios y consultoras gestionar clientes, proyectos, tareas, horas trabajadas, presupuestos, facturas, gastos y reportes desde una sola plataforma.
+Permite gestionar clientes, proyectos, tareas, horas trabajadas, presupuestos, facturas, gastos y reportes desde una sola plataforma autoalojada.
 
 El proyecto está enfocado en equipos que venden servicios por proyecto y necesitan una herramienta operativa clara, mantenible y fácil de desplegar.
 
@@ -22,32 +22,33 @@ Mauri ERP está orientado a negocios donde el trabajo se organiza alrededor de c
 - agencias de desarrollo, diseño o marketing;
 - estudios creativos;
 - consultoras pequeñas;
-- equipos técnicos que trabajan por fases, tareas y horas;
-- empresas de servicios que necesitan controlar presupuestos, facturación y gastos.
+- equipos técnicos que trabajan por fases, tareas y horas.
 
 Flujo principal:
 
 ```txt
-Cliente -> Proyecto -> Tareas / Horas -> Presupuesto -> Factura -> Gastos -> Reportes
+Cliente -> Presupuesto -> Proyecto -> Tareas / Horas -> Factura -> Cobro
 ```
 
-Mauri ERP combina gestión de clientes con operación interna, por lo que encaja como ERP ligero con funciones CRM para servicios profesionales.
+**Qué no es:** no es un CRM de ventas (sin leads ni pipeline comercial) ni un ERP genérico (sin inventario, contabilidad de doble partida, nóminas ni manufactura). Es la pieza intermedia entre un cliente ya cerrado y el cobro de su factura.
 
 ## Funcionalidades
 
 - Panel inicial con resumen de actividad y métricas.
-- Gestión de clientes.
-- Gestión de proyectos asociados a clientes.
-- Gestión de tareas y responsables.
-- Gestión de empleados.
+- Gestión de clientes, proyectos, empleados y gastos.
+- Tablero Kanban de tareas con arrastrar y soltar entre columnas.
 - Registro de horas trabajadas por proyecto.
-- Creación y gestión de presupuestos.
-- Creación y gestión de facturas.
-- Registro de gastos.
-- Reportes financieros.
+- Creación y gestión de presupuestos, con conversión directa a factura.
+- Gestión de facturas.
+- Reportes financieros y de proyectos.
+- Buscador global tipo *command palette* (`Ctrl/⌘ K`) sobre clientes, proyectos, facturas y presupuestos.
+- Paginación en todos los listados.
+- Tema claro, oscuro o según el sistema.
 - Actividad reciente del sistema.
-- Modo demo con base de datos en memoria.
+- Modo demo con base de datos en memoria y datos de prueba precargados.
 - Soporte para PostgreSQL en entornos persistentes.
+
+> Los formularios de creación y edición de la mayoría de entidades (clientes, proyectos, empleados, facturas, gastos, tareas) están en desarrollo; por ahora el modo demo se prueba principalmente navegando los datos precargados y el flujo de presupuestos, que sí es funcional de punta a punta.
 
 ## Stack técnico
 
@@ -242,7 +243,7 @@ Antes de arrancar en producción, configura `DATABASE_URL` y ejecuta las migraci
 
 ## Estado del proyecto
 
-Mauri ERP está en desarrollo activo y cubre las entidades principales del flujo de servicios profesionales.
+Mauri ERP está en desarrollo activo y cubre las entidades principales del flujo de servicios profesionales. La navegación, los listados y el flujo de presupuestos ya son funcionales; los formularios de creación y edición del resto de entidades son el siguiente foco de trabajo.
 
 ## Contribuir
 

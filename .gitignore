@@ -28,3 +28,7 @@ Thumbs.db
 .idea/
 .vscode/
 .claude/
+
+# Documentación interna de trabajo (no forma parte del repo público)
+PRODUCT_SCOPE.md
+PENDIENTES.md

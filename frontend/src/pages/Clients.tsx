@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { useListClients } from "@/api";
+import { useListClients, useDeleteClient, getListClientsQueryKey } from "@/api";
+import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import {
   Table,
   TableBody,
@@ -11,8 +12,11 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EntityAvatar } from "@/components/entity-avatar";
+import { CopyableText } from "@/components/copyable-text";
+import { ActiveStatusBadge } from "@/components/status-badge";
+import { PaginationBar } from "@/components/pagination-bar";
 import { Search, Plus, MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
@@ -23,11 +27,21 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+const PAGE_SIZE = 10;
+
 export default function Clients() {
   const [search, setSearch] = useState("");
-  const { data, isLoading } = useListClients({ search });
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useListClients({ search, page, limit: PAGE_SIZE });
+  const deleteClient = useDeleteClient();
+  const confirmDelete = useConfirmDelete(deleteClient, getListClientsQueryKey({ search, page, limit: PAGE_SIZE }), "Cliente");
 
   const clients = data?.data || [];
+
+  function handleSearchChange(value: string) {
+    setSearch(value);
+    setPage(1);
+  }
 
   return (
     <div className="space-y-6">
@@ -48,7 +62,7 @@ export default function Clients() {
             placeholder="Buscar clientes..."
             className="pl-8"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
           />
         </div>
       </div>
@@ -69,7 +83,12 @@ export default function Clients() {
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
-                  <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-8 w-8 rounded-full" />
+                      <Skeleton className="h-4 w-[120px]" />
+                    </div>
+                  </TableCell>
                   <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
                   <TableCell><Skeleton className="h-4 w-[200px]" /></TableCell>
                   <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
@@ -87,17 +106,16 @@ export default function Clients() {
               clients.map((client) => (
                 <TableRow key={client.id}>
                   <TableCell className="font-medium">
-                    <Link href={`/clientes/${client.id}`} className="hover:underline">
+                    <Link href={`/clientes/${client.id}`} className="flex items-center gap-3 hover:underline">
+                      <EntityAvatar name={client.name} />
                       {client.name}
                     </Link>
                   </TableCell>
                   <TableCell>{client.company || "-"}</TableCell>
-                  <TableCell>{client.email}</TableCell>
-                  <TableCell>{client.phone || "-"}</TableCell>
+                  <TableCell><CopyableText value={client.email} /></TableCell>
+                  <TableCell>{client.phone ? <CopyableText value={client.phone} /> : "-"}</TableCell>
                   <TableCell>
-                    <Badge variant={client.status === "active" ? "default" : "secondary"}>
-                      {client.status === "active" ? "Activo" : "Inactivo"}
-                    </Badge>
+                    <ActiveStatusBadge active={client.status === "active"} />
                   </TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
@@ -113,8 +131,13 @@ export default function Clients() {
                           <Link href={`/clientes/${client.id}`}>Ver detalles</Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>Editar</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">Eliminar</DropdownMenuItem>
+                        <DropdownMenuItem disabled>Editar (próximamente)</DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => confirmDelete(client.id, client.name)}
+                        >
+                          Eliminar
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -124,6 +147,10 @@ export default function Clients() {
           </TableBody>
         </Table>
       </div>
+
+      {data && (
+        <PaginationBar page={page} limit={PAGE_SIZE} total={data.total} onPageChange={setPage} />
+      )}
     </div>
   );
 }

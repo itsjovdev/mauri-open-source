@@ -1,5 +1,7 @@
 import { useState } from "react";
-import { useListTimeEntries } from "@/api";
+import { useListTimeEntries, useDeleteTimeEntry, getListTimeEntriesQueryKey } from "@/api";
+import { useConfirmDelete } from "@/hooks/use-confirm-delete";
+import { PaginationBar } from "@/components/pagination-bar";
 import {
   Table,
   TableBody,
@@ -19,11 +21,15 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { formatDate } from "@/lib/format";
+
+const PAGE_SIZE = 10;
 
 export default function TimeTracking() {
-  const { data, isLoading } = useListTimeEntries({});
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useListTimeEntries({ page, limit: PAGE_SIZE });
+  const deleteTimeEntry = useDeleteTimeEntry();
+  const confirmDelete = useConfirmDelete(deleteTimeEntry, getListTimeEntriesQueryKey({ page, limit: PAGE_SIZE }), "Registro de horas");
 
   const entries = data?.data || [];
 
@@ -73,7 +79,7 @@ export default function TimeTracking() {
               entries.map((entry) => (
                 <TableRow key={entry.id}>
                   <TableCell className="font-medium">
-                    {format(new Date(entry.date), "dd MMM, yyyy", { locale: es })}
+                    {formatDate(entry.date)}
                   </TableCell>
                   <TableCell>{entry.employeeName || "-"}</TableCell>
                   <TableCell>{entry.projectName || "-"}</TableCell>
@@ -89,9 +95,14 @@ export default function TimeTracking() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                        <DropdownMenuItem>Editar</DropdownMenuItem>
+                        <DropdownMenuItem disabled>Editar (próximamente)</DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive">Eliminar</DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => confirmDelete(entry.id, entry.description || undefined)}
+                        >
+                          Eliminar
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -101,6 +112,10 @@ export default function TimeTracking() {
           </TableBody>
         </Table>
       </div>
+
+      {data && (
+        <PaginationBar page={page} limit={PAGE_SIZE} total={data.total} onPageChange={setPage} />
+      )}
     </div>
   );
 }

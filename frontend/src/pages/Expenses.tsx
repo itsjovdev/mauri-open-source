@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { useListExpenses } from "@/api";
+import { useListExpenses, useDeleteExpense, getListExpensesQueryKey } from "@/api";
+import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import {
   Table,
   TableBody,
@@ -20,19 +21,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
+import { PaginationBar } from "@/components/pagination-bar";
+import { formatCurrency, formatDate } from "@/lib/format";
+
+const PAGE_SIZE = 10;
 
 export default function Expenses() {
   const [search, setSearch] = useState("");
-  const { data, isLoading } = useListExpenses({ search });
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useListExpenses({ search, page, limit: PAGE_SIZE });
+  const deleteExpense = useDeleteExpense();
+  const confirmDelete = useConfirmDelete(deleteExpense, getListExpensesQueryKey({ search, page, limit: PAGE_SIZE }), "Gasto");
 
   const expenses = data?.data || [];
 
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(val);
-  };
+  function handleSearchChange(value: string) {
+    setSearch(value);
+    setPage(1);
+  }
 
   return (
     <div className="space-y-6">
@@ -53,7 +60,7 @@ export default function Expenses() {
             placeholder="Buscar gastos..."
             className="pl-8"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
           />
         </div>
       </div>
@@ -94,7 +101,7 @@ export default function Expenses() {
               expenses.map((expense) => (
                 <TableRow key={expense.id}>
                   <TableCell className="whitespace-nowrap">
-                    {format(new Date(expense.date), "dd MMM, yyyy", { locale: es })}
+                    {formatDate(expense.date)}
                   </TableCell>
                   <TableCell className="font-medium max-w-[200px] truncate" title={expense.description}>
                     {expense.description}
@@ -115,9 +122,14 @@ export default function Expenses() {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuLabel>Acciones</DropdownMenuLabel>
-                        <DropdownMenuItem>Editar</DropdownMenuItem>
+                        <DropdownMenuItem disabled>Editar (próximamente)</DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem className="text-destructive">Eliminar</DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => confirmDelete(expense.id, expense.description)}
+                        >
+                          Eliminar
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -127,6 +139,10 @@ export default function Expenses() {
           </TableBody>
         </Table>
       </div>
+
+      {data && (
+        <PaginationBar page={page} limit={PAGE_SIZE} total={data.total} onPageChange={setPage} />
+      )}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { useListInvoices } from "@/api";
+import { useListInvoices, useDeleteInvoice, getListInvoicesQueryKey } from "@/api";
+import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import {
   Table,
   TableBody,
@@ -13,6 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EntityAvatar } from "@/components/entity-avatar";
+import { PaginationBar } from "@/components/pagination-bar";
 import { Search, Plus, MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
@@ -22,27 +25,32 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { formatCurrency, formatDate } from "@/lib/format";
 
-const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" | "success" }> = {
   draft: { label: "Borrador", variant: "secondary" },
   sent: { label: "Enviada", variant: "outline" },
   pending: { label: "Pendiente", variant: "outline" },
-  paid: { label: "Pagada", variant: "default" },
+  paid: { label: "Pagada", variant: "success" },
   partial: { label: "Parcial", variant: "secondary" },
   cancelled: { label: "Cancelada", variant: "destructive" },
 };
 
+const PAGE_SIZE = 10;
+
 export default function Invoices() {
   const [search, setSearch] = useState("");
-  const { data, isLoading } = useListInvoices({ search });
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useListInvoices({ search, page, limit: PAGE_SIZE });
+  const deleteInvoice = useDeleteInvoice();
+  const confirmDelete = useConfirmDelete(deleteInvoice, getListInvoicesQueryKey({ search, page, limit: PAGE_SIZE }), "Factura");
 
   const invoices = data?.data || [];
 
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(val);
-  };
+  function handleSearchChange(value: string) {
+    setSearch(value);
+    setPage(1);
+  }
 
   return (
     <div className="space-y-6">
@@ -63,7 +71,7 @@ export default function Invoices() {
             placeholder="Buscar facturas..."
             className="pl-8"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
           />
         </div>
       </div>
@@ -85,7 +93,12 @@ export default function Invoices() {
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
                   <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-8 w-8 rounded-full" />
+                      <Skeleton className="h-4 w-[120px]" />
+                    </div>
+                  </TableCell>
                   <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
                   <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
                   <TableCell><Skeleton className="h-6 w-[80px]" /></TableCell>
@@ -106,9 +119,16 @@ export default function Invoices() {
                       {invoice.invoiceNumber}
                     </Link>
                   </TableCell>
-                  <TableCell>{invoice.clientName || "-"}</TableCell>
                   <TableCell>
-                    {invoice.dueDate ? format(new Date(invoice.dueDate), "dd MMM, yyyy", { locale: es }) : "-"}
+                    {invoice.clientName ? (
+                      <div className="flex items-center gap-3">
+                        <EntityAvatar name={invoice.clientName} />
+                        {invoice.clientName}
+                      </div>
+                    ) : "-"}
+                  </TableCell>
+                  <TableCell>
+                    {invoice.dueDate ? formatDate(invoice.dueDate) : "-"}
                   </TableCell>
                   <TableCell className="font-semibold">{formatCurrency(invoice.total)}</TableCell>
                   <TableCell>
@@ -129,10 +149,15 @@ export default function Invoices() {
                         <DropdownMenuItem asChild>
                           <Link href={`/facturas/${invoice.id}`}>Ver detalles</Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>Registrar Pago</DropdownMenuItem>
+                        <DropdownMenuItem disabled>Registrar Pago (próximamente)</DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>Editar</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">Eliminar</DropdownMenuItem>
+                        <DropdownMenuItem disabled>Editar (próximamente)</DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => confirmDelete(invoice.id, invoice.invoiceNumber)}
+                        >
+                          Eliminar
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -142,6 +167,10 @@ export default function Invoices() {
           </TableBody>
         </Table>
       </div>
+
+      {data && (
+        <PaginationBar page={page} limit={PAGE_SIZE} total={data.total} onPageChange={setPage} />
+      )}
     </div>
   );
 }

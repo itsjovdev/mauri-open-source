@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { useListProjects } from "@/api";
+import { useListProjects, useDeleteProject, getListProjectsQueryKey } from "@/api";
+import { useConfirmDelete } from "@/hooks/use-confirm-delete";
 import {
   Table,
   TableBody,
@@ -13,6 +14,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EntityAvatar } from "@/components/entity-avatar";
+import { PaginationBar } from "@/components/pagination-bar";
 import { Search, Plus, MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
@@ -24,13 +27,15 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Progress } from "@/components/ui/progress";
 
-const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" | "success" }> = {
   planning: { label: "Planificación", variant: "outline" },
-  active: { label: "Activo", variant: "default" },
+  active: { label: "Activo", variant: "success" },
   on_hold: { label: "En espera", variant: "secondary" },
   completed: { label: "Completado", variant: "default" },
   cancelled: { label: "Cancelado", variant: "destructive" },
 };
+
+const PAGE_SIZE = 10;
 
 const priorityMap: Record<string, { label: string; color: string }> = {
   low: { label: "Baja", color: "text-blue-500" },
@@ -41,9 +46,17 @@ const priorityMap: Record<string, { label: string; color: string }> = {
 
 export default function Projects() {
   const [search, setSearch] = useState("");
-  const { data, isLoading } = useListProjects({ search });
+  const [page, setPage] = useState(1);
+  const { data, isLoading } = useListProjects({ search, page, limit: PAGE_SIZE });
+  const deleteProject = useDeleteProject();
+  const confirmDelete = useConfirmDelete(deleteProject, getListProjectsQueryKey({ search, page, limit: PAGE_SIZE }), "Proyecto");
 
   const projects = data?.data || [];
+
+  function handleSearchChange(value: string) {
+    setSearch(value);
+    setPage(1);
+  }
 
   return (
     <div className="space-y-6">
@@ -64,7 +77,7 @@ export default function Projects() {
             placeholder="Buscar proyectos..."
             className="pl-8"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
           />
         </div>
       </div>
@@ -86,7 +99,12 @@ export default function Projects() {
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
                   <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-8 w-8 rounded-full" />
+                      <Skeleton className="h-4 w-[100px]" />
+                    </div>
+                  </TableCell>
                   <TableCell><Skeleton className="h-6 w-[80px]" /></TableCell>
                   <TableCell><Skeleton className="h-4 w-[60px]" /></TableCell>
                   <TableCell><Skeleton className="h-2 w-full" /></TableCell>
@@ -107,7 +125,14 @@ export default function Projects() {
                       {project.name}
                     </Link>
                   </TableCell>
-                  <TableCell>{project.clientName || "-"}</TableCell>
+                  <TableCell>
+                    {project.clientName ? (
+                      <div className="flex items-center gap-3">
+                        <EntityAvatar name={project.clientName} />
+                        {project.clientName}
+                      </div>
+                    ) : "-"}
+                  </TableCell>
                   <TableCell>
                     <Badge variant={statusMap[project.status]?.variant || "default"}>
                       {statusMap[project.status]?.label || project.status}
@@ -138,8 +163,13 @@ export default function Projects() {
                           <Link href={`/proyectos/${project.id}`}>Ver detalles</Link>
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
-                        <DropdownMenuItem>Editar</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">Eliminar</DropdownMenuItem>
+                        <DropdownMenuItem disabled>Editar (próximamente)</DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => confirmDelete(project.id, project.name)}
+                        >
+                          Eliminar
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -149,6 +179,10 @@ export default function Projects() {
           </TableBody>
         </Table>
       </div>
+
+      {data && (
+        <PaginationBar page={page} limit={PAGE_SIZE} total={data.total} onPageChange={setPage} />
+      )}
     </div>
   );
 }

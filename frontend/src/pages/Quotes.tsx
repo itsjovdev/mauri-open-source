@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { useListQuotes } from "@/api";
+import { useListQuotes, useDeleteQuote, useConvertQuoteToInvoice, getListQuotesQueryKey } from "@/api";
+import { useConfirmDelete } from "@/hooks/use-confirm-delete";
+import { useToast } from "@/hooks/use-toast";
 import {
   Table,
   TableBody,
@@ -13,6 +15,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { EntityAvatar } from "@/components/entity-avatar";
+import { PaginationBar } from "@/components/pagination-bar";
 import { Search, Plus, MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,
@@ -22,25 +26,45 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { formatCurrency } from "@/lib/format";
 
-const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" | "success" }> = {
   draft: { label: "Borrador", variant: "secondary" },
   sent: { label: "Enviado", variant: "outline" },
-  approved: { label: "Aprobado", variant: "default" },
+  approved: { label: "Aprobado", variant: "success" },
   rejected: { label: "Rechazado", variant: "destructive" },
   expired: { label: "Expirado", variant: "secondary" },
 };
 
+const PAGE_SIZE = 10;
+
 export default function Quotes() {
   const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
   const [, setLocation] = useLocation();
-  const { data, isLoading } = useListQuotes({ search });
+  const { data, isLoading } = useListQuotes({ search, page, limit: PAGE_SIZE });
+  const deleteQuote = useDeleteQuote();
+  const convertMutation = useConvertQuoteToInvoice();
+  const { toast } = useToast();
+  const confirmDelete = useConfirmDelete(deleteQuote, getListQuotesQueryKey({ search, page, limit: PAGE_SIZE }), "Presupuesto");
 
   const quotes = data?.data || [];
 
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(val);
-  };
+  function handleSearchChange(value: string) {
+    setSearch(value);
+    setPage(1);
+  }
+
+  function handleConvert(quoteId: number) {
+    convertMutation.mutate({ id: quoteId }, {
+      onSuccess: () => {
+        toast({ variant: "success", title: "Presupuesto convertido", description: "Se generó la factura correctamente." });
+      },
+      onError: () => {
+        toast({ variant: "destructive", title: "Error", description: "No se pudo convertir el presupuesto." });
+      },
+    });
+  }
 
   return (
     <>
@@ -62,7 +86,7 @@ export default function Quotes() {
             placeholder="Buscar presupuestos..."
             className="pl-8"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
           />
         </div>
       </div>
@@ -84,7 +108,12 @@ export default function Quotes() {
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
                   <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <Skeleton className="h-8 w-8 rounded-full" />
+                      <Skeleton className="h-4 w-[120px]" />
+                    </div>
+                  </TableCell>
                   <TableCell><Skeleton className="h-4 w-[200px]" /></TableCell>
                   <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
                   <TableCell><Skeleton className="h-6 w-[80px]" /></TableCell>
@@ -105,7 +134,14 @@ export default function Quotes() {
                       {quote.quoteNumber}
                     </Link>
                   </TableCell>
-                  <TableCell>{quote.clientName || "-"}</TableCell>
+                  <TableCell>
+                    {quote.clientName ? (
+                      <div className="flex items-center gap-3">
+                        <EntityAvatar name={quote.clientName} />
+                        {quote.clientName}
+                      </div>
+                    ) : "-"}
+                  </TableCell>
                   <TableCell>{quote.title || "-"}</TableCell>
                   <TableCell className="font-semibold">{formatCurrency(quote.total)}</TableCell>
                   <TableCell>
@@ -126,12 +162,22 @@ export default function Quotes() {
                         <DropdownMenuItem asChild>
                           <Link href={`/presupuestos/${quote.id}`}>Ver detalles</Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>Convertir a Factura</DropdownMenuItem>
+                        <DropdownMenuItem
+                          disabled={quote.status !== "approved" || convertMutation.isPending}
+                          onClick={() => handleConvert(quote.id)}
+                        >
+                          Convertir a Factura
+                        </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem asChild>
                           <Link href={`/presupuestos/${quote.id}/editar`}>Editar</Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive">Eliminar</DropdownMenuItem>
+                        <DropdownMenuItem
+                          className="text-destructive"
+                          onClick={() => confirmDelete(quote.id, quote.quoteNumber)}
+                        >
+                          Eliminar
+                        </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -141,6 +187,10 @@ export default function Quotes() {
           </TableBody>
         </Table>
       </div>
+
+      {data && (
+        <PaginationBar page={page} limit={PAGE_SIZE} total={data.total} onPageChange={setPage} />
+      )}
     </div>
     </>
   );

@@ -114,12 +114,12 @@ export default function QuoteEditor() {
                 <p className="text-2xl font-bold tracking-tight">
                   {q.quoteNumber ?? "Se asigna al guardar"}
                 </p>
-                <div className="mt-3 flex justify-end gap-8 text-sm">
+                <div className="mt-3 flex items-start justify-end gap-8 text-sm">
                   <div>
                     <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
                       Fecha emisión
                     </p>
-                    <p>{format(issueDate, "dd/MM/yyyy", { locale: es })}</p>
+                    <p className="h-5 leading-5">{format(issueDate, "dd/MM/yyyy", { locale: es })}</p>
                   </div>
                   <div>
                     <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
@@ -127,7 +127,7 @@ export default function QuoteEditor() {
                     </p>
                     <Input
                       type="date"
-                      className="h-8 w-[140px] border-0 p-0 text-right shadow-none focus-visible:ring-1 focus-visible:ring-ring/40"
+                      className="h-5 w-[140px] border-0 p-0 text-right leading-5 shadow-none focus-visible:ring-1 focus-visible:ring-ring/40"
                       value={q.form.validUntil}
                       onChange={(e) => q.setField("validUntil", e.target.value)}
                     />

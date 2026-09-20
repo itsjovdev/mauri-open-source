@@ -19,18 +19,12 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Mail, Phone, Calendar, Briefcase, CheckSquare, Clock } from "lucide-react";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
-
-const taskStatusMap: Record<string, string> = {
-  backlog: "Backlog",
-  todo: "Por Hacer",
-  in_progress: "En Progreso",
-  in_review: "En Revisión",
-  done: "Completado",
-};
+import { DetailPageHeader } from "@/components/detail-page-header";
+import { EmptyState } from "@/components/empty-state";
+import { CopyableText } from "@/components/copyable-text";
+import { Mail, Phone, Calendar, Briefcase, CheckSquare, Clock } from "lucide-react";
+import { formatDate } from "@/lib/format";
+import { taskStatusMap } from "@/lib/status-maps";
 
 export default function EmployeeDetail() {
   const { id } = useParams<{ id: string }>();
@@ -66,22 +60,16 @@ export default function EmployeeDetail() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild>
-          <Link href="/empleados">
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-        </Button>
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">{employee.firstName} {employee.lastName}</h2>
-          <p className="text-muted-foreground">{employee.position || "Empleado"} • {employee.department || "Sin departamento"}</p>
-        </div>
-        <div className="ml-auto flex items-center gap-2">
+      <DetailPageHeader
+        backHref="/empleados"
+        title={`${employee.firstName} ${employee.lastName}`}
+        subtitle={`${employee.position || "Empleado"} • ${employee.department || "Sin departamento"}`}
+        actions={
           <Badge variant={employee.status === "active" ? "default" : "secondary"} className="text-sm px-3 py-1">
             {employee.status === "active" ? "Activo" : "Inactivo"}
           </Badge>
-        </div>
-      </div>
+        }
+      />
 
       <div className="grid gap-6 md:grid-cols-3">
         <Card className="md:col-span-1">
@@ -91,12 +79,14 @@ export default function EmployeeDetail() {
           <CardContent className="space-y-4">
             <div className="flex items-center gap-3 text-sm">
               <Mail className="h-4 w-4 text-muted-foreground" />
-              <a href={`mailto:${employee.email}`} className="text-primary hover:underline">{employee.email}</a>
+              <CopyableText value={employee.email}>
+                <a href={`mailto:${employee.email}`} className="text-primary hover:underline">{employee.email}</a>
+              </CopyableText>
             </div>
             {employee.phone && (
               <div className="flex items-center gap-3 text-sm">
                 <Phone className="h-4 w-4 text-muted-foreground" />
-                <span>{employee.phone}</span>
+                <CopyableText value={employee.phone} />
               </div>
             )}
             {employee.department && (
@@ -110,7 +100,7 @@ export default function EmployeeDetail() {
                 <Calendar className="h-4 w-4 text-muted-foreground" />
                 <span className="text-muted-foreground">Contratación:</span>
                 <span className="font-medium">
-                  {format(new Date(employee.hireDate), "dd MMM, yyyy", { locale: es })}
+                  {formatDate(employee.hireDate)}
                 </span>
               </div>
             )}
@@ -156,10 +146,7 @@ export default function EmployeeDetail() {
                     </Table>
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-muted-foreground border rounded-md border-dashed">
-                    <CheckSquare className="mx-auto h-8 w-8 mb-2 opacity-50" />
-                    <p>No tiene tareas asignadas actualmente.</p>
-                  </div>
+                  <EmptyState icon={CheckSquare} message="No tiene tareas asignadas actualmente." />
                 )}
               </TabsContent>
 
@@ -184,7 +171,7 @@ export default function EmployeeDetail() {
                         {timeEntries.map(entry => (
                           <TableRow key={entry.id}>
                             <TableCell className="whitespace-nowrap">
-                              {format(new Date(entry.date), "dd MMM, yyyy", { locale: es })}
+                              {formatDate(entry.date)}
                             </TableCell>
                             <TableCell>{entry.projectName || "-"}</TableCell>
                             <TableCell className="max-w-[200px] truncate">{entry.description || "-"}</TableCell>
@@ -195,10 +182,7 @@ export default function EmployeeDetail() {
                     </Table>
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-muted-foreground border rounded-md border-dashed">
-                    <Clock className="mx-auto h-8 w-8 mb-2 opacity-50" />
-                    <p>No hay registros de horas recientes.</p>
-                  </div>
+                  <EmptyState icon={Clock} message="No hay registros de horas recientes." />
                 )}
               </TabsContent>
             </CardContent>

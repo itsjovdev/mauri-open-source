@@ -16,9 +16,9 @@ import {
   TableRow
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Download, FileText, Send, Building } from "lucide-react";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { DetailPageHeader } from "@/components/detail-page-header";
+import { FileText, Building } from "lucide-react";
+import { formatCurrency, formatDate } from "@/lib/format";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -42,20 +42,17 @@ export default function QuoteDetail() {
 
   const convertMutation = useConvertQuoteToInvoice();
 
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(val);
-  };
-
   const handleConvertToInvoice = () => {
     convertMutation.mutate({ id: quoteId }, {
       onSuccess: () => {
         toast({
+          variant: "success",
           title: "Presupuesto convertido",
           description: "El presupuesto ha sido convertido a factura exitosamente.",
         });
         queryClient.invalidateQueries({ queryKey: getGetQuoteQueryKey(quoteId) });
       },
-      onError: (err) => {
+      onError: () => {
         toast({
           title: "Error",
           description: "No se pudo convertir el presupuesto.",
@@ -80,31 +77,27 @@ export default function QuoteDetail() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild>
-          <Link href="/presupuestos">
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-        </Button>
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Presupuesto {quote.quoteNumber}</h2>
-          <p className="text-muted-foreground">{quote.title || "Sin título"}</p>
-        </div>
-        <div className="ml-auto flex items-center gap-3">
-          <Badge variant={statusMap[quote.status]?.variant || "default"} className="text-sm px-3 py-1">
-            {statusMap[quote.status]?.label || quote.status}
-          </Badge>
-          {quote.status === "approved" && (
-            <Button
-              onClick={handleConvertToInvoice}
-              disabled={convertMutation.isPending}
-            >
-              <FileText className="mr-2 h-4 w-4" />
-              Convertir a Factura
-            </Button>
-          )}
-        </div>
-      </div>
+      <DetailPageHeader
+        backHref="/presupuestos"
+        title={`Presupuesto ${quote.quoteNumber}`}
+        subtitle={quote.title || "Sin título"}
+        actions={
+          <>
+            <Badge variant={statusMap[quote.status]?.variant || "default"} className="text-sm px-3 py-1">
+              {statusMap[quote.status]?.label || quote.status}
+            </Badge>
+            {quote.status === "approved" && (
+              <Button
+                onClick={handleConvertToInvoice}
+                disabled={convertMutation.isPending}
+              >
+                <FileText className="mr-2 h-4 w-4" />
+                Convertir a Factura
+              </Button>
+            )}
+          </>
+        }
+      />
 
       <div className="grid gap-6 md:grid-cols-3">
         <Card className="md:col-span-2">
@@ -183,12 +176,12 @@ export default function QuoteDetail() {
               <div className="text-sm pt-4 border-t space-y-2">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Fecha emisión:</span>
-                  <span className="font-medium">{format(new Date(quote.createdAt), "dd MMM, yyyy", { locale: es })}</span>
+                  <span className="font-medium">{formatDate(quote.createdAt)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Válido hasta:</span>
                   <span className="font-medium">
-                    {quote.validUntil ? format(new Date(quote.validUntil), "dd MMM, yyyy", { locale: es }) : "-"}
+                    {quote.validUntil ? formatDate(quote.validUntil) : "-"}
                   </span>
                 </div>
               </div>

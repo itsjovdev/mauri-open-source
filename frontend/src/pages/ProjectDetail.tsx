@@ -18,9 +18,11 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Calendar, DollarSign, Target, AlignLeft } from "lucide-react";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { DetailPageHeader } from "@/components/detail-page-header";
+import { EmptyState } from "@/components/empty-state";
+import { Calendar, DollarSign, Target, AlignLeft } from "lucide-react";
+import { formatCurrency, formatDate } from "@/lib/format";
+import { taskStatusMap } from "@/lib/status-maps";
 
 const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   planning: { label: "Planificación", variant: "outline" },
@@ -28,14 +30,6 @@ const statusMap: Record<string, { label: string; variant: "default" | "secondary
   on_hold: { label: "En espera", variant: "secondary" },
   completed: { label: "Completado", variant: "default" },
   cancelled: { label: "Cancelado", variant: "destructive" },
-};
-
-const taskStatusMap: Record<string, string> = {
-  backlog: "Backlog",
-  todo: "Por Hacer",
-  in_progress: "En Progreso",
-  in_review: "En Revisión",
-  done: "Completado",
 };
 
 export default function ProjectDetail() {
@@ -51,10 +45,6 @@ export default function ProjectDetail() {
   });
 
   const tasks = tasksData?.data || [];
-
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(val);
-  };
 
   if (loadingProject) {
     return (
@@ -74,32 +64,28 @@ export default function ProjectDetail() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild>
-          <Link href="/proyectos">
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-        </Button>
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">{project.name}</h2>
+      <DetailPageHeader
+        backHref="/proyectos"
+        title={project.name}
+        subtitle={
           <div className="flex items-center gap-2 mt-1">
-            <p className="text-muted-foreground">Proyecto</p>
+            <span>Proyecto</span>
             {project.clientName && (
               <>
-                <span className="text-muted-foreground">&bull;</span>
+                <span>&bull;</span>
                 <Link href={`/clientes/${project.clientId}`} className="text-primary hover:underline font-medium">
                   {project.clientName}
                 </Link>
               </>
             )}
           </div>
-        </div>
-        <div className="ml-auto flex items-center gap-2">
+        }
+        actions={
           <Badge variant={statusMap[project.status]?.variant || "default"} className="text-sm px-3 py-1">
             {statusMap[project.status]?.label || project.status}
           </Badge>
-        </div>
-      </div>
+        }
+      />
 
       <div className="grid gap-6 md:grid-cols-3">
         <Card className="md:col-span-2">
@@ -139,7 +125,7 @@ export default function ProjectDetail() {
                 <Calendar className="h-4 w-4" /> Fecha de inicio
               </span>
               <span className="font-medium">
-                {project.startDate ? format(new Date(project.startDate), "dd MMM, yyyy", { locale: es }) : "-"}
+                {project.startDate ? formatDate(project.startDate) : "-"}
               </span>
             </div>
             <div className="flex items-center justify-between text-sm">
@@ -147,7 +133,7 @@ export default function ProjectDetail() {
                 <Calendar className="h-4 w-4" /> Fecha límite
               </span>
               <span className="font-medium">
-                {project.deadline ? format(new Date(project.deadline), "dd MMM, yyyy", { locale: es }) : "-"}
+                {project.deadline ? formatDate(project.deadline) : "-"}
               </span>
             </div>
             {project.budget !== null && project.budget !== undefined && (
@@ -204,9 +190,7 @@ export default function ProjectDetail() {
               </Table>
             </div>
           ) : (
-            <div className="text-center py-8 text-muted-foreground border rounded-md border-dashed">
-              <p>No hay tareas registradas para este proyecto.</p>
-            </div>
+            <EmptyState message="No hay tareas registradas para este proyecto." />
           )}
         </CardContent>
       </Card>

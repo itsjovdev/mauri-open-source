@@ -15,9 +15,9 @@ import {
   TableRow
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Download, CreditCard, Building } from "lucide-react";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { DetailPageHeader } from "@/components/detail-page-header";
+import { CreditCard, Building } from "lucide-react";
+import { formatCurrency, formatDate } from "@/lib/format";
 
 const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
   draft: { label: "Borrador", variant: "secondary" },
@@ -35,10 +35,6 @@ export default function InvoiceDetail() {
   const { data: invoice, isLoading: loadingInvoice } = useGetInvoice(invoiceId, {
     query: { enabled: !!invoiceId, queryKey: getGetInvoiceQueryKey(invoiceId) }
   });
-
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(val);
-  };
 
   if (loadingInvoice) {
     return (
@@ -58,28 +54,24 @@ export default function InvoiceDetail() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild>
-          <Link href="/facturas">
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-        </Button>
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Factura {invoice.invoiceNumber}</h2>
-          <p className="text-muted-foreground">{invoice.title || "Sin título"}</p>
-        </div>
-        <div className="ml-auto flex items-center gap-3">
-          <Badge variant={statusMap[invoice.status]?.variant || "default"} className="text-sm px-3 py-1">
-            {statusMap[invoice.status]?.label || invoice.status}
-          </Badge>
-          {!isPaid && invoice.status !== "cancelled" && (
-            <Button>
-              <CreditCard className="mr-2 h-4 w-4" />
-              Registrar Pago
-            </Button>
-          )}
-        </div>
-      </div>
+      <DetailPageHeader
+        backHref="/facturas"
+        title={`Factura ${invoice.invoiceNumber}`}
+        subtitle={invoice.title || "Sin título"}
+        actions={
+          <>
+            <Badge variant={statusMap[invoice.status]?.variant || "default"} className="text-sm px-3 py-1">
+              {statusMap[invoice.status]?.label || invoice.status}
+            </Badge>
+            {!isPaid && invoice.status !== "cancelled" && (
+              <Button>
+                <CreditCard className="mr-2 h-4 w-4" />
+                Registrar Pago
+              </Button>
+            )}
+          </>
+        }
+      />
 
       <div className="grid gap-6 md:grid-cols-3">
         <Card className="md:col-span-2">
@@ -168,12 +160,12 @@ export default function InvoiceDetail() {
               <div className="text-sm pt-4 border-t space-y-2">
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Fecha emisión:</span>
-                  <span className="font-medium">{format(new Date(invoice.createdAt), "dd MMM, yyyy", { locale: es })}</span>
+                  <span className="font-medium">{formatDate(invoice.createdAt)}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Vencimiento:</span>
                   <span className="font-medium">
-                    {invoice.dueDate ? format(new Date(invoice.dueDate), "dd MMM, yyyy", { locale: es }) : "-"}
+                    {invoice.dueDate ? formatDate(invoice.dueDate) : "-"}
                   </span>
                 </div>
               </div>

@@ -7,7 +7,7 @@ import {
   getGetClientProjectsQueryKey,
   getGetClientInvoicesQueryKey
 } from "@/api";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,10 +19,11 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft, Building, Mail, Phone, MapPin, Briefcase, FileText } from "lucide-react";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { DetailPageHeader } from "@/components/detail-page-header";
+import { EmptyState } from "@/components/empty-state";
+import { CopyableText } from "@/components/copyable-text";
+import { Building, Mail, Phone, MapPin, Briefcase, FileText } from "lucide-react";
+import { formatCurrency, formatDate } from "@/lib/format";
 
 export default function ClientDetail() {
   const { id } = useParams<{ id: string }>();
@@ -39,10 +40,6 @@ export default function ClientDetail() {
   const { data: invoices, isLoading: loadingInvoices } = useGetClientInvoices(clientId, {
     query: { enabled: !!clientId, queryKey: getGetClientInvoicesQueryKey(clientId) }
   });
-
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(val);
-  };
 
   if (loadingClient) {
     return (
@@ -62,22 +59,16 @@ export default function ClientDetail() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild>
-          <Link href="/clientes">
-            <ArrowLeft className="h-5 w-5" />
-          </Link>
-        </Button>
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">{client.name}</h2>
-          <p className="text-muted-foreground">Detalles del cliente e historial</p>
-        </div>
-        <div className="ml-auto">
+      <DetailPageHeader
+        backHref="/clientes"
+        title={client.name}
+        subtitle="Detalles del cliente e historial"
+        actions={
           <Badge variant={client.status === "active" ? "default" : "secondary"} className="text-sm px-3 py-1">
             {client.status === "active" ? "Activo" : "Inactivo"}
           </Badge>
-        </div>
-      </div>
+        }
+      />
 
       <div className="grid gap-6 md:grid-cols-3">
         <Card className="md:col-span-1">
@@ -93,12 +84,14 @@ export default function ClientDetail() {
             )}
             <div className="flex items-center gap-3 text-sm">
               <Mail className="h-4 w-4 text-muted-foreground" />
-              <a href={`mailto:${client.email}`} className="text-primary hover:underline">{client.email}</a>
+              <CopyableText value={client.email}>
+                <a href={`mailto:${client.email}`} className="text-primary hover:underline">{client.email}</a>
+              </CopyableText>
             </div>
             {client.phone && (
               <div className="flex items-center gap-3 text-sm">
                 <Phone className="h-4 w-4 text-muted-foreground" />
-                <span>{client.phone}</span>
+                <CopyableText value={client.phone} />
               </div>
             )}
             {(client.address || client.city || client.country) && (
@@ -163,10 +156,7 @@ export default function ClientDetail() {
                     </Table>
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-muted-foreground border rounded-md border-dashed">
-                    <Briefcase className="mx-auto h-8 w-8 mb-2 opacity-50" />
-                    <p>No hay proyectos asociados a este cliente.</p>
-                  </div>
+                  <EmptyState icon={Briefcase} message="No hay proyectos asociados a este cliente." />
                 )}
               </TabsContent>
               <TabsContent value="invoices" className="m-0">
@@ -195,7 +185,7 @@ export default function ClientDetail() {
                               </Link>
                             </TableCell>
                             <TableCell>
-                              {invoice.dueDate ? format(new Date(invoice.dueDate), "dd MMM, yyyy", { locale: es }) : "-"}
+                              {invoice.dueDate ? formatDate(invoice.dueDate) : "-"}
                             </TableCell>
                             <TableCell>{formatCurrency(invoice.total)}</TableCell>
                             <TableCell>
@@ -207,10 +197,7 @@ export default function ClientDetail() {
                     </Table>
                   </div>
                 ) : (
-                  <div className="text-center py-8 text-muted-foreground border rounded-md border-dashed">
-                    <FileText className="mx-auto h-8 w-8 mb-2 opacity-50" />
-                    <p>No hay facturas asociadas a este cliente.</p>
-                  </div>
+                  <EmptyState icon={FileText} message="No hay facturas asociadas a este cliente." />
                 )}
               </TabsContent>
             </CardContent>

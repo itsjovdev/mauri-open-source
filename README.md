@@ -9,7 +9,9 @@
 [![PostgreSQL](https://img.shields.io/badge/postgresql-ready-4169e1?style=flat-square&logo=postgresql&logoColor=white)](https://www.postgresql.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-yellow.svg?style=flat-square)](./LICENSE)
 
-Mauri es un software de gestión open source para agencias y consultoras pequeñas (equipos de 2 a 30 personas) que venden proyectos a clientes y facturan por ese trabajo.
+> **English:** Mauri is an open source, self-hosted client and project management app for small agencies, studios, consultancies and freelancers. Manage clients, quotes, projects, tasks, time tracking, invoices and expenses in one place. Built with React, NestJS, TypeScript and PostgreSQL, under the MIT license. The Spanish documentation below is the primary reference; this app's UI is currently in Spanish only.
+
+Mauri es un software de gestión open source, autoalojado, para agencias y consultoras pequeñas (equipos de 2 a 30 personas) que venden proyectos a clientes y facturan por ese trabajo.
 
 Permite gestionar clientes, proyectos, tareas, horas trabajadas, presupuestos, facturas, gastos y reportes desde una sola plataforma autoalojada.
 
@@ -249,6 +251,38 @@ Antes de arrancar en producción, configura `DATABASE_URL` y ejecuta las migraci
 ## Estado del proyecto
 
 Mauri está en desarrollo activo y cubre las entidades principales del flujo de servicios profesionales. La navegación, los listados y el flujo de presupuestos ya son funcionales; los formularios de creación y edición del resto de entidades son el siguiente foco de trabajo.
+
+### Próximos pasos (roadmap)
+
+- Formularios de creación y edición para clientes, proyectos, empleados, facturas, gastos y tareas (hoy solo el flujo de presupuestos tiene creación/edición completas).
+- Registrar pagos sobre una factura existente.
+- Generación real de PDF para presupuestos y facturas.
+- Edición de los datos de la propia empresa (hoy son de solo lectura en Configuración).
+
+Este roadmap refleja el estado real del código, no una promesa de fechas.
+
+## Preguntas frecuentes
+
+**¿Mauri es un CRM?**
+No. No tiene leads, pipeline comercial ni gestión de oportunidades de venta. Empieza en el cliente ya cerrado.
+
+**¿Es un ERP completo?**
+No. No incluye inventario, contabilidad de doble partida, nóminas ni manufactura. Es una herramienta enfocada en el ciclo cliente → presupuesto → proyecto → factura.
+
+**¿Puedo usarlo ya en producción?**
+El flujo de presupuestos (crear, editar, convertir a factura) es funcional de punta a punta. El resto de entidades todavía dependen en buena parte de los datos precargados del modo demo; revisa "Estado del proyecto" y el roadmap antes de decidir.
+
+**¿Puedo usarlo comercialmente?**
+Sí. Tiene licencia MIT: puedes usarlo, modificarlo y distribuirlo, incluso en proyectos comerciales, conservando el aviso de copyright.
+
+**¿Necesito PostgreSQL para probarlo?**
+No. El modo demo usa `sql.js` en memoria y arranca sin configurar ninguna base de datos externa.
+
+**¿Hay una demo pública en línea?**
+No por ahora. La única forma de probarlo hoy es levantarlo en local siguiendo la sección de Instalación.
+
+**¿Cómo contribuyo?**
+Revisa la sección "Contribuir" más abajo.
 
 ## Contribuir
 

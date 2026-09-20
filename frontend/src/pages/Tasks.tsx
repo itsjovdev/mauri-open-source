@@ -1,14 +1,15 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { useListTasks } from "@/api";
+import { useQueryClient } from "@tanstack/react-query";
+import { useListTasks, useUpdateTask, getListTasksQueryKey } from "@/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Search, Plus, Calendar, Clock, UserCircle } from "lucide-react";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { Search, Plus, Calendar, UserCircle } from "lucide-react";
+import { formatDate } from "@/lib/format";
+import { cn } from "@/lib/utils";
 
 const COLUMNS = [
   { id: "backlog", title: "Backlog" },
@@ -20,9 +21,29 @@ const COLUMNS = [
 
 export default function Tasks() {
   const [search, setSearch] = useState("");
+  const [dragOverColumn, setDragOverColumn] = useState<string | null>(null);
   const { data, isLoading } = useListTasks({ search });
+  const updateTask = useUpdateTask();
+  const queryClient = useQueryClient();
 
   const tasks = data?.data || [];
+
+  function handleDrop(columnId: string, event: React.DragEvent) {
+    setDragOverColumn(null);
+    const taskId = Number(event.dataTransfer.getData("text/plain"));
+    if (!taskId) return;
+    const task = tasks.find((t) => t.id === taskId);
+    if (!task || task.status === columnId) return;
+
+    updateTask.mutate(
+      { id: taskId, data: { status: columnId as never } },
+      {
+        onSuccess: () => {
+          queryClient.invalidateQueries({ queryKey: getListTasksQueryKey({ search }) });
+        },
+      }
+    );
+  }
 
   return (
     <div className="space-y-6 h-[calc(100vh-10rem)] flex flex-col">
@@ -63,7 +84,22 @@ export default function Tasks() {
           {COLUMNS.map((column) => {
             const columnTasks = tasks.filter((t) => t.status === column.id);
             return (
-              <div key={column.id} className="bg-muted/30 border rounded-lg p-4 min-w-[280px] w-[280px] flex flex-col">
+              <div
+                key={column.id}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setDragOverColumn(column.id);
+                }}
+                onDragLeave={() => setDragOverColumn((prev) => (prev === column.id ? null : prev))}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  handleDrop(column.id, e);
+                }}
+                className={cn(
+                  "bg-muted/30 border rounded-lg p-4 min-w-[280px] w-[280px] flex flex-col transition-colors",
+                  dragOverColumn === column.id && "border-primary bg-primary/5"
+                )}
+              >
                 <div className="flex items-center justify-between mb-4">
                   <h3 className="font-semibold">{column.title}</h3>
                   <Badge variant="secondary" className="rounded-full w-6 h-6 p-0 flex items-center justify-center">
@@ -72,7 +108,15 @@ export default function Tasks() {
                 </div>
                 <div className="space-y-3 overflow-y-auto flex-1 pr-1">
                   {columnTasks.map((task) => (
-                    <Card key={task.id} className="cursor-pointer hover:border-primary/50 transition-colors">
+                    <Card
+                      key={task.id}
+                      draggable
+                      onDragStart={(e) => {
+                        e.dataTransfer.setData("text/plain", String(task.id));
+                        e.dataTransfer.effectAllowed = "move";
+                      }}
+                      className="cursor-grab active:cursor-grabbing hover:border-primary/50 transition-colors"
+                    >
                       <CardHeader className="p-3 pb-2">
                         <CardTitle className="text-sm font-medium leading-tight">
                           {task.title}
@@ -87,7 +131,7 @@ export default function Tasks() {
                           {task.dueDate ? (
                             <span className="flex items-center gap-1">
                               <Calendar className="h-3 w-3" />
-                              {format(new Date(task.dueDate), "d MMM", { locale: es })}
+                              {formatDate(task.dueDate, "d MMM")}
                             </span>
                           ) : (
                             <span />

@@ -286,7 +286,7 @@ Revisa la sección "Contribuir" más abajo.
 
 ## Contribuir
 
-Las contribuciones deben mantenerse alineadas con el enfoque del proyecto: gestión para agencias y consultoras pequeñas, no un CRM de ventas ni un ERP genérico.
+Las contribuciones deben mantenerse alineadas con el enfoque del proyecto: gestión para agencias y consultoras pequeñas.
 
 Buenas prácticas para contribuir:
 
@@ -298,4 +298,4 @@ Buenas prácticas para contribuir:
 
 ## Licencia
 
-Este proyecto está licenciado bajo la [Licencia MIT](./LICENSE). Puedes usarlo, modificarlo y distribuirlo libremente, incluso en proyectos comerciales, siempre que conserves el aviso de copyright.
+Este proyecto está licenciado bajo la [Licencia MIT](./LICENSE). Puedes usarlo, modificarlo y distribuirlo libremente, incluso en proyectos comerciales.

@@ -5,6 +5,8 @@ import {
 } from "@/api";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { StatCard } from "@/components/stat-card";
+import { EmptyState } from "@/components/empty-state";
 import {
   BarChart,
   Bar,
@@ -19,18 +21,23 @@ import {
   Legend
 } from "recharts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TrendingUp, TrendingDown, DollarSign, Briefcase, Clock } from "lucide-react";
+import { TrendingUp, TrendingDown, DollarSign, Briefcase } from "lucide-react";
+import { formatCurrency } from "@/lib/format";
 
 const COLORS = ['hsl(var(--chart-1))', 'hsl(var(--chart-2))', 'hsl(var(--chart-3))', 'hsl(var(--chart-4))', 'hsl(var(--chart-5))'];
+
+const PROJECT_STATUS_LABELS: Record<string, string> = {
+  planning: "Planificación",
+  active: "Activo",
+  on_hold: "En espera",
+  completed: "Completado",
+  cancelled: "Cancelado",
+};
 
 export default function Reports() {
   const { data: financialReport, isLoading: loadingFinancial } = useGetFinancialReport({});
   const { data: projectsReport, isLoading: loadingProjects } = useGetProjectsReport({});
   const { data: employeesReport, isLoading: loadingEmployees } = useGetEmployeesReport({});
-
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(val);
-  };
 
   return (
     <div className="space-y-6">
@@ -48,56 +55,28 @@ export default function Reports() {
 
         <TabsContent value="financial" className="space-y-6 m-0">
           <div className="grid gap-4 md:grid-cols-3">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Ingresos Totales</CardTitle>
-                <TrendingUp className="h-4 w-4 text-green-500" />
-              </CardHeader>
-              <CardContent>
-                {loadingFinancial ? (
-                  <Skeleton className="h-8 w-32" />
-                ) : (
-                  <div className="text-2xl font-bold text-green-600">
-                    {formatCurrency(financialReport?.revenue || 0)}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Gastos Totales</CardTitle>
-                <TrendingDown className="h-4 w-4 text-destructive" />
-              </CardHeader>
-              <CardContent>
-                {loadingFinancial ? (
-                  <Skeleton className="h-8 w-32" />
-                ) : (
-                  <div className="text-2xl font-bold text-destructive">
-                    {formatCurrency(financialReport?.expenses || 0)}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between pb-2">
-                <CardTitle className="text-sm font-medium">Beneficio Neto</CardTitle>
-                <DollarSign className="h-4 w-4 text-primary" />
-              </CardHeader>
-              <CardContent>
-                {loadingFinancial ? (
-                  <Skeleton className="h-8 w-32" />
-                ) : (
-                  <>
-                    <div className="text-2xl font-bold">
-                      {formatCurrency(financialReport?.profit || 0)}
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Margen: {financialReport?.profitMargin?.toFixed(1) || 0}%
-                    </p>
-                  </>
-                )}
-              </CardContent>
-            </Card>
+            <StatCard
+              title="Ingresos Totales"
+              icon={TrendingUp}
+              loading={loadingFinancial}
+              value={formatCurrency(financialReport?.revenue || 0)}
+              tone="success"
+            />
+            <StatCard
+              title="Gastos Totales"
+              icon={TrendingDown}
+              loading={loadingFinancial}
+              value={formatCurrency(financialReport?.expenses || 0)}
+              tone="danger"
+            />
+            <StatCard
+              title="Beneficio Neto"
+              icon={DollarSign}
+              loading={loadingFinancial}
+              value={formatCurrency(financialReport?.profit || 0)}
+              description={`Margen: ${financialReport?.profitMargin?.toFixed(1) || 0}%`}
+              tone="primary"
+            />
           </div>
 
           <Card>
@@ -154,7 +133,10 @@ export default function Reports() {
                     <ResponsiveContainer width="100%" height="100%">
                       <PieChart>
                         <Pie
-                          data={projectsReport.byStatus}
+                          data={projectsReport.byStatus.map((entry) => ({
+                            ...entry,
+                            category: PROJECT_STATUS_LABELS[entry.category] ?? entry.category,
+                          }))}
                           cx="50%"
                           cy="50%"
                           innerRadius={60}

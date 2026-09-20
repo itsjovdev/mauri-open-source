@@ -1,37 +1,16 @@
 import { useGetDashboardSummary, useGetRecentActivity, useGetUpcomingTasks, useGetRevenueChart } from "@/api";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { StatCard } from "@/components/stat-card";
 import { Users, FolderKanban, DollarSign, Receipt } from "lucide-react";
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer } from "recharts";
 import { Skeleton } from "@/components/ui/skeleton";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
-
-function StatCard({ title, value, icon: Icon, description }: any) {
-  return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        {description && (
-          <p className="text-xs text-muted-foreground">{description}</p>
-        )}
-      </CardContent>
-    </Card>
-  );
-}
+import { formatCurrency, formatDate } from "@/lib/format";
 
 export default function Dashboard() {
   const { data: summary, isLoading: loadingSummary } = useGetDashboardSummary();
   const { data: recentActivity, isLoading: loadingActivity } = useGetRecentActivity();
   const { data: upcomingTasks, isLoading: loadingTasks } = useGetUpcomingTasks();
   const { data: revenueChart, isLoading: loadingChart } = useGetRevenueChart();
-
-  const formatCurrency = (val: number) => {
-    return new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(val);
-  };
 
   return (
     <div className="space-y-6">
@@ -50,22 +29,26 @@ export default function Dashboard() {
             title="Ingresos Mensuales"
             value={formatCurrency(summary.monthlyRevenue)}
             icon={DollarSign}
+            tone="success"
           />
           <StatCard
             title="Clientes Activos"
             value={summary.activeClients}
             icon={Users}
+            tone="info"
           />
           <StatCard
             title="Proyectos Activos"
             value={summary.activeProjects}
             icon={FolderKanban}
+            tone="primary"
           />
           <StatCard
             title="Facturas Pendientes"
             value={summary.pendingInvoices}
             description={summary.pendingInvoicesAmount ? formatCurrency(summary.pendingInvoicesAmount) : ""}
             icon={Receipt}
+            tone="danger"
           />
         </div>
       ) : null}
@@ -138,7 +121,7 @@ export default function Dashboard() {
                     <div className="flex-1 space-y-1">
                       <p className="text-sm font-medium leading-none">{activity.description}</p>
                       <p className="text-sm text-muted-foreground">
-                        {format(new Date(activity.createdAt), "dd MMM, HH:mm", { locale: es })}
+                        {formatDate(activity.createdAt, "dd MMM, HH:mm")}
                       </p>
                     </div>
                   </div>

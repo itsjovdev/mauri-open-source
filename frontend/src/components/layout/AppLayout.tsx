@@ -12,7 +12,6 @@ import {
   BarChart3,
   Settings,
   Bell,
-  Search,
   Menu,
   PanelLeftClose,
 } from "lucide-react";
@@ -32,9 +31,9 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
-import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { GlobalSearch } from "@/components/global-search";
 
 const navItems = [
   { title: "Inicio", url: "/", icon: LayoutDashboard },
@@ -156,16 +155,7 @@ function Header() {
       </Button>
 
       <div className="w-full flex-1">
-        <form>
-          <div className="relative max-w-md">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Buscar..."
-              className="w-full appearance-none bg-background pl-8 shadow-none"
-            />
-          </div>
-        </form>
+        <GlobalSearch />
       </div>
 
       <div className="flex items-center gap-2 sm:gap-4">
@@ -192,8 +182,8 @@ export function AppLayout({ children }: { children: React.ReactNode }) {
         <AppSidebar />
         <div className="flex flex-1 flex-col overflow-hidden">
           <Header />
-          <main className="flex-1 overflow-auto p-4 sm:p-6 lg:p-8">
-            <div className="mx-auto w-full max-w-7xl">{children}</div>
+          <main className="flex-1 overflow-auto p-4 sm:p-6">
+            {children}
           </main>
         </div>
       </div>
